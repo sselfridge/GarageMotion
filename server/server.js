@@ -127,19 +127,22 @@ app.get("/door", (req, res) => {
 // change door status DEV only
 app.post("/door/:status", (req, res) => {
   console.log(`/door/:status`);
-  console.log(req);
-  console.log(req.params);
   const status = req.params.status;
   console.log("Incoming Status:", status);
   let newValue;
   if (status === "open") {
+    console.log("Open1:");
     newValue = objIO.OPEN;
+    console.log("Open2:");
   } else if (status === "close") {
+    console.log("Closed 1:");
     newValue = objIO.CLOSED;
+    console.log("Closed 2:");
   } else {
     console.error(`Invalid door command. open / close is valid. Found: ${status}`);
     res.status(400).send();
   }
+  console.log("Pre Motion Write:");
   objIO.motion.writeSync(newValue);
   console.log("Send Response:");
   res.json("done");
