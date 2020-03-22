@@ -33,13 +33,12 @@ const turnOffTheLights = setInterval(() => {
 }, 300000);
 
 const logInterval = setInterval(() => {
-  if (CURRENT_ENV !== "production") console.log(pi.ioStatus());
+  console.log(pi.ioStatus());
 }, 1000);
 
 //check interval for changing door / LED values
 const interval = setInterval(() => {
   const now = new Date();
-  console.log(`Server was running at: ${now.getDate()} - ${now.getHours()}:${now.getMinutes()}`);
 
   const motionStatus = pi.motionCheck();
 
@@ -71,7 +70,7 @@ const interval = setInterval(() => {
   //     }
   //   }
   // }
-}, 1000);
+}, 20);
 
 // app.get('/api/', (req, res) => {
 //   console.log('/api');

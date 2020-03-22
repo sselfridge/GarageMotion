@@ -69,20 +69,20 @@ function motionCheck() {
   let doorTime = piController.objIO.doorTime;
 
   if (currentState) {
-    console.log("Current Motion Status:", currentState);
-    console.log("Setting LED to ON");
     turnOnLED("green");
   } else {
-    console.log("Current Motion Status:", currentState);
-    console.log("Setting LED to OFF");
     turnOffLED("green");
+  }
+
+  if (prevState !== currentState) {
+    console.log("CHANGE!!!!!=======================================");
   }
 
   // if (currentState !== prevState) {
   //   blinkLED("yellow", 1000);
   // }
 
-  // prevState = currentState;
+  prevState = currentState;
 
   // if (currentState !== doorState && doorTime === 0) {
   //   // start timer
