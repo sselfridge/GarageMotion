@@ -141,6 +141,7 @@ app.post("/door/:status", (req, res) => {
     res.status(400).send();
   }
   objIO.motion.writeSync(newValue);
+  console.log("Send Response:");
   res.json("done");
 });
 
