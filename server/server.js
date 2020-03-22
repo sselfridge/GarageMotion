@@ -127,6 +127,8 @@ app.get("/door", (req, res) => {
 // change door status DEV only
 app.post("/door/:status", (req, res) => {
   console.log(`/door/:status`);
+  console.log(req);
+  console.log(req.params);
   const status = req.params.status;
   console.log("Incoming Status:", status);
   let newValue;
