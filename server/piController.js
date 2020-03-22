@@ -68,33 +68,43 @@ function motionCheck() {
   let doorState = piController.objIO.doorState;
   let doorTime = piController.objIO.doorTime;
 
-  if (currentState !== prevState) {
-    blinkLED("yellow", 1000);
+  if (currentState) {
+    console.log("Current Motion Status:", currentState);
+    console.log("Setting LED to ON");
+    turnOnLED("green");
+  } else {
+    console.log("Current Motion Status:", currentState);
+    console.log("Setting LED to OFF");
+    turnOffLED("green");
   }
 
-  prevState = currentState;
+  // if (currentState !== prevState) {
+  //   blinkLED("yellow", 1000);
+  // }
 
-  if (currentState !== doorState && doorTime === 0) {
-    // start timer
-    // console.log('Start Door Timer');
-    piController.objIO.doorTime = Date.now();
-  }
+  // prevState = currentState;
 
-  if (currentState !== doorState && doorTime > 0) {
-    const diffTime = Date.now() - doorTime;
-    // console.log(`Door Timer: ${diffTime}`);
-    if (diffTime > piController.objIO.STATE_CHANGE_TIMEOUT) {
-      //change door state
-      //   console.log('Change Door State!');
-      doorState = doorState ^ 1;
-      piController.objIO.doorTime = 0;
-    }
-  } else if (currentState === doorState && doorTime > 0) {
-    // door closed before timeout - remove timer
-    piController.objIO.doorTime = 0;
-  }
+  // if (currentState !== doorState && doorTime === 0) {
+  //   // start timer
+  //   // console.log('Start Door Timer');
+  //   piController.objIO.doorTime = Date.now();
+  // }
 
-  piController.objIO.doorState = doorState;
+  // if (currentState !== doorState && doorTime > 0) {
+  //   const diffTime = Date.now() - doorTime;
+  //   // console.log(`Door Timer: ${diffTime}`);
+  //   if (diffTime > piController.objIO.STATE_CHANGE_TIMEOUT) {
+  //     //change door state
+  //     //   console.log('Change Door State!');
+  //     doorState = doorState ^ 1;
+  //     piController.objIO.doorTime = 0;
+  //   }
+  // } else if (currentState === doorState && doorTime > 0) {
+  //   // door closed before timeout - remove timer
+  //   piController.objIO.doorTime = 0;
+  // }
+
+  // piController.objIO.doorState = doorState;
   return doorState;
 }
 

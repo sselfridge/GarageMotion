@@ -1,44 +1,40 @@
-const express = require('express');
-const path = require('path')
-const keys = require('../config/keys.js');
+const express = require("express");
+const path = require("path");
+const keys = require("../config/keys.js");
 
-const config = require('../config/keys');
+const config = require("../config/keys");
 // const twilio = require('twilio')(config.twilio.accountSid, config.twilio.authToken);
-
 
 const app = express();
 
-
-app.use(express.static(path.join(__dirname, '../build')));
-app.use(express.static(path.join(__dirname, '..', 'public')));
+app.use(express.static(path.join(__dirname, "../build")));
+app.use(express.static(path.join(__dirname, "..", "public")));
 
 // app.use('/profile', profileRoutes);
 
-const pi = require('./piController');
-
+const pi = require("./piController");
 
 let roomInUse = false;
 const eventObj = {
   start: null,
-  end: null,
+  end: null
 };
 
-const CURRENT_ENV = process.env.NODE_ENV === 'production' ? 'production' : 'dev';
+const CURRENT_ENV = process.env.NODE_ENV === "production" ? "production" : "dev";
 const objIO = pi.setupIO();
 // ONLY USE THE GET ROUTES WITH objIO mentioned in them
 // NOT THE POST ROUTES
 
 // turn off all the lights every 5min
 const turnOffTheLights = setInterval(() => {
-  pi.turnOffLED('green');
-  pi.turnOffLED('yellow');
-  pi.turnOffLED('red');
+  pi.turnOffLED("green");
+  pi.turnOffLED("yellow");
+  pi.turnOffLED("red");
 }, 300000);
 
-const logInterval = setInterval(()=>{
-  if (CURRENT_ENV !== 'production') console.log(pi.ioStatus());
-
-},1000)
+const logInterval = setInterval(() => {
+  if (CURRENT_ENV !== "production") console.log(pi.ioStatus());
+}, 1000);
 
 //check interval for changing door / LED values
 const interval = setInterval(() => {
@@ -46,11 +42,6 @@ const interval = setInterval(() => {
   console.log(`Server was running at: ${now.getDate()} - ${now.getHours()}:${now.getMinutes()}`);
 
   const motionStatus = pi.motionCheck();
-
-
-  pi.turnOnLED('green',1000)
-
-
 
   // if (doorStatus === objIO.CLOSED) {
   //   if (roomInUse === false) {
@@ -80,7 +71,7 @@ const interval = setInterval(() => {
   //     }
   //   }
   // }
-}, 5000);
+}, 1000);
 
 // app.get('/api/', (req, res) => {
 //   console.log('/api');
@@ -89,18 +80,18 @@ const interval = setInterval(() => {
 //   res.json('Allo!!!');
 // });
 
-app.post('/sms', (req, res) => {
+app.post("/sms", (req, res) => {
   const message = req.body.message;
   console.log(`message:${message}`);
-  if ('userId' in req.cookies) {
-    const phone = 'phone' in req.body ? req.body.phone : '';
+  if ("userId" in req.cookies) {
+    const phone = "phone" in req.body ? req.body.phone : "";
     const userId = req.cookies.userId;
     Session.findOne(
       { _id: userId },
 
       (err, userDataArr) => {
         if (err) {
-          res.send('err');
+          res.send("err");
         } else {
           const user = userDataArr;
           if (user.phone) {
@@ -108,21 +99,21 @@ app.post('/sms', (req, res) => {
               {
                 to: user.phone,
                 from: config.twilio.number,
-                body: `Reservation:\n\n${message}`,
+                body: `Reservation:\n\n${message}`
               },
               (err, message) => {
                 if (err) {
-                  console.log('Twilio Error');
+                  console.log("Twilio Error");
                   console.log(err);
-                  res.status(444).json('SMS error');
+                  res.status(444).json("SMS error");
                 }
                 console.log(message.sid);
               }
             );
-            res.json('SENT!');
+            res.json("SENT!");
             return;
           } else {
-            res.status(445).send('No Phone for user');
+            res.status(445).send("No Phone for user");
           }
         }
       }
@@ -130,41 +121,41 @@ app.post('/sms', (req, res) => {
   }
 });
 // get current door status
-app.get('/door', (req, res) => {
+app.get("/door", (req, res) => {
   // console.log(`/door`);
   res.json(roomInUse);
 });
 // change door status DEV only
-app.post('/door/:status', (req, res) => {
+app.post("/door/:status", (req, res) => {
   console.log(`/door/:status`);
   const status = req.params.status;
   let newValue;
-  if (status === 'open') {
+  if (status === "open") {
     newValue = objIO.OPEN;
-  } else if (status === 'close') {
+  } else if (status === "close") {
     newValue = objIO.CLOSED;
   } else {
     console.error(`Invalid door command. open / close is valid. Found: ${status}`);
     res.status(400).send();
   }
-  objIO.doorStatus.writeSync(newValue);
-  res.json('done');
+  objIO.motion.writeSync(newValue);
+  res.json("done");
 });
 
-app.get('/led/:color', (req, res) => {
+app.get("/led/:color", (req, res) => {
   console.log(`/led/:color`);
   const color = req.params.color;
   console.log(`Color:${color}`);
 
   let led;
-  if (color === 'red') {
+  if (color === "red") {
     led = objIO.red;
-  } else if (color === 'yellow') {
+  } else if (color === "yellow") {
     led = objIO.yellow;
-  } else if (color === 'green') {
+  } else if (color === "green") {
     led = objIO.green;
   } else {
-    console.log('Invalid color');
+    console.log("Invalid color");
     res.status(402).json(`Invalid color ${color}.  Valid colors: red,yellow,green`);
     return;
   }
@@ -175,19 +166,19 @@ app.get('/led/:color', (req, res) => {
 });
 
 // change color DEV only
-app.post('/led/:color', (req, res) => {
+app.post("/led/:color", (req, res) => {
   console.log(`/led/:color`);
   const color = req.params.color;
 
   let led;
-  if (color === 'red') {
+  if (color === "red") {
     led = objIO.red;
-  } else if (color === 'yellow') {
+  } else if (color === "yellow") {
     led = objIO.yellow;
-  } else if (color === 'green') {
+  } else if (color === "green") {
     led = objIO.green;
   } else {
-    console.log('Invalid color');
+    console.log("Invalid color");
     res.status(402).json(`Invalid color ${color}.  Valid colors: red,yellow,green`);
     return;
   }
@@ -199,19 +190,19 @@ app.post('/led/:color', (req, res) => {
 
 // blink color DEV only
 // turns off after
-app.post('/led/blink/:color/:time', (req, res) => {
+app.post("/led/blink/:color/:time", (req, res) => {
   console.log(`/led/blink/:color/:time`);
   const color = req.params.color;
   const time = parseInt(req.params.time);
   let led;
-  if (color === 'red') {
+  if (color === "red") {
     led = objIO.red;
-  } else if (color === 'yellow') {
+  } else if (color === "yellow") {
     led = objIO.yellow;
-  } else if (color === 'green') {
+  } else if (color === "green") {
     led = objIO.green;
   } else {
-    console.log('Invalid color');
+    console.log("Invalid color");
     res.status(402).json(`Invalid color ${color}.  Valid colors: red,yellow,green`);
     return;
   }
@@ -219,41 +210,41 @@ app.post('/led/blink/:color/:time', (req, res) => {
   if (Number.isInteger(time) && time > 0) {
     pi.blinkLED(color, time);
   } else {
-    console.log('Invalid color');
+    console.log("Invalid color");
     res.status(402).json(`Invalid time ${time}. Must be positive integer`);
     return;
   }
 
-  res.json('done');
+  res.json("done");
 });
 
 //only need this to host the static files if we're running on the pi
-if (CURRENT_ENV === 'production') {
-  app.get('/', function(req, res) {
+if (CURRENT_ENV === "production") {
+  app.get("/", function(req, res) {
     if (req.session) {
       console.log(req.session);
     }
-    res.sendFile(path.join(__dirname + '/../build/index.html'));
+    res.sendFile(path.join(__dirname + "/../build/index.html"));
   });
 }
 
-app.get('/api/unauthorized', (req, res) => {
+app.get("/api/unauthorized", (req, res) => {
   res.send("You aren't authorized to access this");
 });
 
 // catch all 404 function
 app.use(function(req, res) {
-  res.status(404).json('Something broke! Check url and try again?');
+  res.status(404).json("Something broke! Check url and try again?");
 });
 
 // other catch all, might be better error reporting
 app.use(({ errCode, error }, req, res, next) => {
-  console.log('Error Code:');
+  console.log("Error Code:");
   console.log(errCode);
   res.status(errCode).json({ error });
 });
 
-const port = CURRENT_ENV === 'production' ? 5000 : 3001;
+const port = CURRENT_ENV === "production" ? 5000 : 3001;
 
 app.listen(port);
 console.log(`Listening on ${port}`);
