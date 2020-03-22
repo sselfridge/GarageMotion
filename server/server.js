@@ -128,6 +128,7 @@ app.get("/door", (req, res) => {
 app.post("/door/:status", (req, res) => {
   console.log(`/door/:status`);
   const status = req.params.status;
+  console.log("Incoming Status:", status);
   let newValue;
   if (status === "open") {
     newValue = objIO.OPEN;
