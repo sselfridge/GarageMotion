@@ -12,7 +12,7 @@ app.use(express.static(path.join(__dirname, "..", "public")));
 
 // app.use('/profile', profileRoutes);
 
-const pi = require("./piController");
+const pi = require("./controllers/piController");
 
 let roomInUse = false;
 const eventObj = {
@@ -142,9 +142,7 @@ app.post("/door/:status", (req, res) => {
     console.error(`Invalid door command. open / close is valid. Found: ${status}`);
     res.status(400).send();
   }
-  console.log("Pre Motion Write:");
-  objIO.motion.writeSync(newValue);
-  console.log("Send Response:");
+  objIO.door.writeSync(newValue);
   res.json("done");
 });
 

@@ -14,7 +14,7 @@ app.use(express.static(path.join(__dirname, '..', 'public')));
 
 // app.use('/profile', profileRoutes);
 
-const pi = require('./piController');
+const pi = require('./controllers/piController');
 
 
 let roomInUse = false;

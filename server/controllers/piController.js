@@ -1,4 +1,4 @@
-const MockGpio = require("./MockGpio");
+const MockGpio = require("../MockGpio");
 
 const OPEN = 1;
 const CLOSED = 0;
@@ -15,6 +15,7 @@ const piController = {
     motion: null,
     doorTime: 0, // time door has been in current state
     doorState: OPEN, // current door state
+
     //constants for the door values
     OPEN: OPEN,
     CLOSED: CLOSED,
@@ -46,11 +47,13 @@ if (CURRENT_ENV === 'production') {
     var onoff = require('onoff');
     const Gpio = onoff.Gpio;
     piController.objIO.motion = new Gpio(2, 'in');
+    piController.objIO.door = new Gpio(2, 'in');
     piController.objIO.green =  new Gpio(4, 'out');
     piController.objIO.yellow = new Gpio(27, 'out');
     piController.objIO.red =  new Gpio(22, 'out');
   } else {
     piController.objIO.motion = new MockGpio();
+    piController.objIO.door = new MockGpio();
     piController.objIO.green = new MockGpio();
     piController.objIO.yellow = new MockGpio();
     piController.objIO.red = new MockGpio();
@@ -64,25 +67,16 @@ let prevState;
 // room consitered in use when it has been in the new state for > 30 seconds
 // expected to be called every 1000ms in server.js
 function motionCheck() {
-  const currentState = piController.objIO.motion.readSync();
+  const currentMotionState = piController.objIO.motion.readSync();
+  const currentDoorState = piController.objIO.motion.readSync();
   let doorState = piController.objIO.doorState;
   let doorTime = piController.objIO.doorTime;
 
-  if (currentState) {
+  if (currentDoorState) {
     turnOnLED("green");
   } else {
     turnOffLED("green");
   }
-
-  if (prevState !== currentState) {
-    console.log("CHANGE!!!!!=======================================");
-  }
-
-  // if (currentState !== prevState) {
-  //   blinkLED("yellow", 1000);
-  // }
-
-  prevState = currentState;
 
   // if (currentState !== doorState && doorTime === 0) {
   //   // start timer
