@@ -50,6 +50,7 @@ const CURRENT_ENV = process.env.NODE_ENV === "production" ? "production" : "dev"
 function setupIO(){
     console.log(`PI Controller: Setup IO`);
 if (CURRENT_ENV === 'production') {
+  console.log('ENV Production');
     var onoff = require('onoff');
     const Gpio = onoff.Gpio;
     piController.objIO.motion = new Gpio(2, 'in');
