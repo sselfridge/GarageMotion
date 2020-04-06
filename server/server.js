@@ -1,76 +1,41 @@
 const express = require("express");
 const path = require("path");
 const keys = require("../config/keys.js");
+const mongooseStart = require('./bin/mongoose');
 
 const config = require("../config/keys");
 // const twilio = require('twilio')(config.twilio.accountSid, config.twilio.authToken);
+
+const pi = require("./controllers/piController");
+const CheckController = require("./controllers/CheckController");
+
+mongooseStart(); 
 
 const app = express();
 
 app.use(express.static(path.join(__dirname, "../build")));
 app.use(express.static(path.join(__dirname, "..", "public")));
 
-// app.use('/profile', profileRoutes);
-
-const pi = require("./controllers/piController");
-
-let roomInUse = false;
-const eventObj = {
-  start: null,
-  end: null
-};
-
 const CURRENT_ENV = process.env.NODE_ENV === "production" ? "production" : "dev";
 const objIO = pi.setupIO();
-// ONLY USE THE GET ROUTES WITH objIO mentioned in them
-// NOT THE POST ROUTES
+const CC = new CheckController(objIO);
 
-// turn off all the lights every 5min
-const turnOffTheLights = setInterval(() => {
-  pi.turnOffLED("green");
-  pi.turnOffLED("yellow");
-  pi.turnOffLED("red");
-}, 300000);
-
-const logInterval = setInterval(() => {
-  console.log(pi.ioStatus());
-}, 1000);
+if (CURRENT_ENV === "dev") {
+  const logInterval = setInterval(() => {
+    console.log(pi.ioStatus());
+  }, 1000);
+}
 
 //check interval for changing door / LED values
 const interval = setInterval(() => {
   const now = new Date();
 
-  const motionStatus = pi.motionCheck();
+  const status = pi.heartbeat();
+  const motionStatus = status.motion;
+  const doorStatus = status.door;
 
-  // if (doorStatus === objIO.CLOSED) {
-  //   if (roomInUse === false) {
-  //     pi.turnOnLED('green', 1000);
-  //     roomInUse = true;
-  //     eventObj.start = Date.now();
-  //     console.log('Event Started');
-  //   } else {
-  //     if (Q.queue.length > 0) pi.turnOnLED('yellow');
-  //     else pi.turnOffLED('yellow');
-  //   }
-  // } else { //door open
-  //   if (roomInUse === true) {
-  //     pi.turnOnLED('green', 1000);
-  //     roomInUse = false;
-  //     eventObj.end = Date.now();
-  //     console.log('Event End');
-  //     if (eventObj.start) eventController.createEvent(eventObj);
-  //     Q.queue.shift();
-  //     eventObj.start = null;
-  //     eventObj.end = null;
-  //   } else {
-  //     if (Q.queue.length > 0) {
-  //       pi.turnOnLED('red');
-  //     } else {
-  //       pi.turnOffLED('red');
-  //     }
-  //   }
-  // }
-}, 20);
+  CC.checkDoor(doorStatus);
+}, 2000);
 
 // app.get('/api/', (req, res) => {
 //   console.log('/api');
@@ -124,11 +89,11 @@ app.get("/door", (req, res) => {
   // console.log(`/door`);
   res.json(roomInUse);
 });
+
 // change door status DEV only
 app.post("/door/:status", (req, res) => {
   console.log(`/door/:status`);
   const status = req.params.status;
-  console.log("Incoming Status:", status);
   let newValue;
   if (status === "open") {
     console.log("Open1:");
@@ -144,6 +109,13 @@ app.post("/door/:status", (req, res) => {
   }
   objIO.door.writeSync(newValue);
   res.json("done");
+});
+
+//trigger motion for 5 seconds
+app.post("/move", (req, res) => {
+  console.log("/move");
+  objIO.motion(writeSync(objIO.MOVEMENT));
+  setTimeout(objIO.motion(writeSync(objIO.NO_MOVEMENT)), 5000);
 });
 
 app.get("/led/:color", (req, res) => {

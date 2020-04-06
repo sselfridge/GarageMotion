@@ -19,8 +19,10 @@
   "homepage": "https://github.com/sselfridge/GarageMotion#readme",
   "dependencies": {
     "express": "^4.17.1",
+    "moment": "^2.24.0",
+    "mongoose": "^5.9.7",
+    "onoff": "^5.0.1",
     "path": "^0.12.7",
-    "twilio": "^3.41.1",
-    "onoff": "^5.0.1"
+    "twilio": "^3.41.1"
   }
 }

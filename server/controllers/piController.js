@@ -4,7 +4,8 @@ const OPEN = 1;
 const CLOSED = 0;
 const ON = 1;
 const OFF = 0;
-
+const MOVEMENT = 1;
+const NO_MOVEMENT = 0;
 const piController = {
   // objIO exported to main server
 
@@ -20,17 +21,22 @@ const piController = {
     OPEN: OPEN,
     CLOSED: CLOSED,
 
-    //constants for LED values
-    ON: 1,
-    OFF: 0,
+    MOVEMENT: MOVEMENT,
+    NO_MOVEMENT: NO_MOVEMENT,
 
-    //time constants
-    STATE_CHANGE_TIMEOUT: 500 //time in new door state before changing
+    //constants for LED values
+    ON: ON,
+    OFF: OFF,
+
+    //time constants in seconds
+    DOOR_BUFFER: 30, // door must be in new state for this long before changing
+    MOTION_TIMEOUT: 1200 // N in minutes x 60 x 1000
   }
 };
 
+// exported functions
 piController.setupIO = setupIO;
-piController.motionCheck = motionCheck;
+piController.heartbeat = heartbeat;
 piController.ioStatus = ioStatus;
 piController.blinkLED = blinkLED;
 piController.turnOffLED = turnOffLED;
@@ -49,71 +55,45 @@ if (CURRENT_ENV === 'production') {
     piController.objIO.motion = new Gpio(2, 'in');
     piController.objIO.door = new Gpio(2, 'in');
     piController.objIO.green =  new Gpio(4, 'out');
-    piController.objIO.yellow = new Gpio(27, 'out');
-    piController.objIO.red =  new Gpio(22, 'out');
+
   } else {
     piController.objIO.motion = new MockGpio();
     piController.objIO.door = new MockGpio();
     piController.objIO.green = new MockGpio();
-    piController.objIO.yellow = new MockGpio();
-    piController.objIO.red = new MockGpio();
+
   }
   piController.objIO.doorTime = 0; //initialize to 0
   return piController.objIO;
 }
 
 let prevState;
-// returns closed (in use) or open (available) (same as objIO.OPEN objIO.CLOSED)
-// room consitered in use when it has been in the new state for > 30 seconds
-// expected to be called every 1000ms in server.js
-function motionCheck() {
-  const currentMotionState = piController.objIO.motion.readSync();
-  const currentDoorState = piController.objIO.motion.readSync();
-  let doorState = piController.objIO.doorState;
-  let doorTime = piController.objIO.doorTime;
 
-  if (currentDoorState) {
+function heartbeat() {
+  const motionState = piController.objIO.motion.readSync();
+  const doorState = piController.objIO.door.readSync();
+
+  if (doorState) {
     turnOnLED("green");
   } else {
     turnOffLED("green");
   }
-
-  // if (currentState !== doorState && doorTime === 0) {
-  //   // start timer
-  //   // console.log('Start Door Timer');
-  //   piController.objIO.doorTime = Date.now();
-  // }
-
-  // if (currentState !== doorState && doorTime > 0) {
-  //   const diffTime = Date.now() - doorTime;
-  //   // console.log(`Door Timer: ${diffTime}`);
-  //   if (diffTime > piController.objIO.STATE_CHANGE_TIMEOUT) {
-  //     //change door state
-  //     //   console.log('Change Door State!');
-  //     doorState = doorState ^ 1;
-  //     piController.objIO.doorTime = 0;
-  //   }
-  // } else if (currentState === doorState && doorTime > 0) {
-  //   // door closed before timeout - remove timer
-  //   piController.objIO.doorTime = 0;
-  // }
-
-  // piController.objIO.doorState = doorState;
-  return doorState;
+  const status = {
+    door: doorState,
+    motion: motionState
+  };
+  return status;
 }
 
 function ioStatus() {
   let motion = piController.objIO.motion.readSync();
-  let red = piController.objIO.red.readSync();
-  let yellow = piController.objIO.yellow.readSync();
+  let door = piController.objIO.door.readSync();
   let green = piController.objIO.green.readSync();
 
   motion = motion === OPEN ? "open" : "closed";
-  red = red === ON ? "ON" : "  ";
-  yellow = yellow === ON ? "ON" : "  ";
+  door = door === OPEN ? "open" : "closed";
   green = green === ON ? "ON" : "  ";
 
-  return `motion: ${motion} -- -------------------- -- green:${green}`;
+  return `motion: ${motion} door: ${door}------- -- green:${green}`;
 }
 
 function turnOnLED(color, timeout = 0) {
