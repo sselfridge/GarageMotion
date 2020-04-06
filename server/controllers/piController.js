@@ -13,7 +13,7 @@ const piController = {
     red: null,
     yellow: null,
     green: null,
-    motion: null,
+    motion: MOVEMENT,
     doorTime: 0, // time door has been in current state
     doorState: OPEN, // current door state
 
@@ -53,7 +53,7 @@ if (CURRENT_ENV === 'production') {
     var onoff = require('onoff');
     const Gpio = onoff.Gpio;
     piController.objIO.motion = new Gpio(2, 'in');
-    piController.objIO.door = new Gpio(2, 'in');
+    piController.objIO.door = new Gpio(23, 'in');
     piController.objIO.green =  new Gpio(4, 'out');
 
   } else {
@@ -89,7 +89,7 @@ function ioStatus() {
   let door = piController.objIO.door.readSync();
   let green = piController.objIO.green.readSync();
 
-  motion = motion === OPEN ? "open" : "closed";
+  // motion = motion === OPEN ? "open" : "closed";
   door = door === OPEN ? "open" : "closed";
   green = green === ON ? "ON" : "  ";
 

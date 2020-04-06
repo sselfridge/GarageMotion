@@ -55,7 +55,12 @@ class CheckController {
     }
   }
 
-  checkMotion(motionStatus) {}
+  checkMotion(motionStatus) {
+
+    
+
+
+  }
 
   checkForActionReq() {}
 }

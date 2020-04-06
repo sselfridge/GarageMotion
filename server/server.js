@@ -1,7 +1,7 @@
 const express = require("express");
 const path = require("path");
 const keys = require("../config/keys.js");
-const mongooseStart = require('./bin/mongoose');
+const mongooseStart = require("./bin/mongoose");
 
 const config = require("../config/keys");
 // const twilio = require('twilio')(config.twilio.accountSid, config.twilio.authToken);
@@ -9,7 +9,7 @@ const config = require("../config/keys");
 const pi = require("./controllers/piController");
 const CheckController = require("./controllers/CheckController");
 
-mongooseStart(); 
+mongooseStart();
 
 const app = express();
 
@@ -20,11 +20,13 @@ const CURRENT_ENV = process.env.NODE_ENV === "production" ? "production" : "dev"
 const objIO = pi.setupIO();
 const CC = new CheckController(objIO);
 
-if (CURRENT_ENV === "dev") {
-  const logInterval = setInterval(() => {
-    console.log(pi.ioStatus());
-  }, 1000);
-}
+let motionTime = null;
+
+// if (CURRENT_ENV === "dev") {
+const logInterval = setInterval(() => {
+  console.log(pi.ioStatus());
+}, 600);
+// }
 
 //check interval for changing door / LED values
 const interval = setInterval(() => {
@@ -35,7 +37,7 @@ const interval = setInterval(() => {
   const doorStatus = status.door;
 
   CC.checkDoor(doorStatus);
-}, 2000);
+}, 2);
 
 // app.get('/api/', (req, res) => {
 //   console.log('/api');
