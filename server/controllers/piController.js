@@ -13,7 +13,7 @@ const piController = {
     red: null,
     yellow: null,
     green: null,
-    motion: MOVEMENT,
+    motion: 3,
     doorTime: 0, // time door has been in current state
     doorState: OPEN, // current door state
 
