@@ -53,7 +53,7 @@ if (CURRENT_ENV === 'production') {
   console.log('ENV Production');
     var onoff = require('onoff');
     const Gpio = onoff.Gpio;
-    piController.objIO.motion = new Gpio(2, 'in');
+    piController.objIO.motion = new Gpio(4, 'in');
     piController.objIO.door = new Gpio(23, 'in');
     piController.objIO.green =  new Gpio(4, 'out');
 
