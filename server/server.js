@@ -30,14 +30,15 @@ const logInterval = setInterval(() => {
 
 //check interval for changing door / LED values
 const interval = setInterval(() => {
-  const now = new Date();
+  const now = new Date(); 
 
   const status = pi.heartbeat();
   const motionStatus = status.motion;
   const doorStatus = status.door;
 
   CC.checkDoor(doorStatus);
-}, 2);
+  CC.checkMotion(motionStatus);
+}, 100);
 
 // app.get('/api/', (req, res) => {
 //   console.log('/api');
@@ -113,11 +114,14 @@ app.post("/door/:status", (req, res) => {
   res.json("done");
 });
 
+let moveTimeout;
+
 //trigger motion for 5 seconds
 app.post("/move", (req, res) => {
-  console.log("/move");
-  objIO.motion(writeSync(objIO.MOVEMENT));
-  setTimeout(objIO.motion(writeSync(objIO.NO_MOVEMENT)), 5000);
+  clearTimeout(moveTimeout);
+  objIO.motion.writeSync(objIO.MOVEMENT);
+  moveTimeout = setTimeout(() => objIO.motion.writeSync(objIO.NO_MOVEMENT), 5000);
+  res.status(200).send();
 });
 
 app.get("/led/:color", (req, res) => {

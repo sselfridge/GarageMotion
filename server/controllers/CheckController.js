@@ -9,7 +9,7 @@ class CheckController {
     this.doorCloseTime = moment(moment() - 5000);
     this.doorStatus = objIO.OPEN;
     this.motionStartTime = moment();
-    this.motionEndTime = moment(moment() - 5000);
+    this.motionStopTime = moment(moment() - 5000);
     this.motionStatus = objIO.MOVEMENT;
 
     this.OPEN = objIO.OPEN;
@@ -56,10 +56,28 @@ class CheckController {
   }
 
   checkMotion(motionStatus) {
+    const prevMotionStatus = this.motionStatus;
+    if (motionStatus !== prevMotionStatus) {
+      if (motionStatus === this.OPEN) {
+        console.log("motion Started!!!!!");
+        this.motionStartTime = moment();
 
-    
+        const start = this.motionStopTime;
+        const end = this.motionStartTime;
+        event.createEvent("motion", "start", start, end);
+      } else if (motionStatus === this.CLOSED) {
+        console.log("motion STOPPED!!!!");
+        this.motionStopTime = moment();
 
+        const start = this.motionStartTime;
+        const end = this.motionStopTime;
+        event.createEvent("motion", "stop", start, end);
+      } else {
+        console.error("Invalid motion state");
+      }
 
+      this.motionStatus = motionStatus;
+    }
   }
 
   checkForActionReq() {}
