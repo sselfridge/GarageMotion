@@ -4,7 +4,7 @@ const config = {
     authToken: ""
   },
   dbKeys: {
-    mongoURI: ""
+    mongoURI: "mongodb://localhost:27017/garage"
   }
 };
 
