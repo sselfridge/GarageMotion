@@ -22,15 +22,15 @@ const CC = new CheckController(objIO);
 
 let motionTime = null;
 
-// if (CURRENT_ENV === "dev") {
-const logInterval = setInterval(() => {
-  console.log(pi.ioStatus());
-}, 600);
-// }
+if (CURRENT_ENV === "dev") {
+  const logInterval = setInterval(() => {
+    console.log(pi.ioStatus());
+  }, 600);
+}
 
 //check interval for changing door / LED values
 const interval = setInterval(() => {
-  const now = new Date(); 
+  const now = new Date();
 
   const status = pi.heartbeat();
   const motionStatus = status.motion;
