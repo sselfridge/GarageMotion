@@ -37,16 +37,13 @@ class CheckController {
         console.log("DOOR OPENED!!!!");
         this.doorOpenTime = moment();
 
-        const start = this.doorCloseTime;
-        const end = this.doorOpenTime;
-        event.createEvent("door", "open", start, end);
       } else if (doorStatus === this.CLOSED) {
         console.log("DOOR CLOSED!!!!");
         this.doorCloseTime = moment();
 
         const start = this.doorOpenTime;
         const end = this.doorCloseTime;
-        event.createEvent("door", "close", start, end);
+        event.createEvent("door", "open", start, end);
       } else {
         console.error("Invalid door state");
       }
@@ -62,16 +59,13 @@ class CheckController {
         console.log("motion Started!!!!!");
         this.motionStartTime = moment();
 
-        const start = this.motionStopTime;
-        const end = this.motionStartTime;
-        event.createEvent("motion", "start", start, end);
       } else if (motionStatus === this.CLOSED) {
         console.log("motion STOPPED!!!!");
         this.motionStopTime = moment();
 
         const start = this.motionStartTime;
         const end = this.motionStopTime;
-        event.createEvent("motion", "stop", start, end);
+        event.createEvent("motion", "Moving", start, end);
       } else {
         console.error("Invalid motion state");
       }
