@@ -38,7 +38,7 @@ const interval = setInterval(() => {
 
   CC.checkDoor(doorStatus);
   CC.checkMotion(motionStatus);
-}, 100);
+}, 0);
 
 // app.get('/api/', (req, res) => {
 //   console.log('/api');
