@@ -1,15 +1,16 @@
 const express = require("express");
 const path = require("path");
-const keys = require("../config/keys.js");
-const mongooseStart = require("./bin/mongoose");
-
+const m = require("moment");
 const config = require("../config/keys");
-// const twilio = require('twilio')(config.twilio.accountSid, config.twilio.authToken);
-
+const mongooseStart = require("./bin/mongoose");
 const pi = require("./controllers/piController");
-const CheckController = require("./controllers/CheckController");
+const CheckController = require("./controllers/event");
 
 mongooseStart();
+
+const twilio = require("./controllers/twilio");
+const numbers = ["+18057651413"];
+const client = twilio.makeClient(numbers);
 
 const app = express();
 
@@ -17,10 +18,9 @@ app.use(express.static(path.join(__dirname, "../build")));
 app.use(express.static(path.join(__dirname, "..", "public")));
 
 const CURRENT_ENV = process.env.NODE_ENV === "production" ? "production" : "dev";
+
 const objIO = pi.setupIO();
 const CC = new CheckController(objIO);
-
-let motionTime = null;
 
 if (CURRENT_ENV === "dev") {
   const logInterval = setInterval(() => {
@@ -38,7 +38,25 @@ const interval = setInterval(() => {
 
   CC.checkDoor(doorStatus);
   CC.checkMotion(motionStatus);
-}, 0);
+
+  if (doorStatus === CC.OPEN) eventCheck(CC);
+}, 2000);
+
+const eventCheck = (CC) => {
+  const { doorOpenTime, motionStopTime, motionStartTime } = CC;
+  const now = m();
+  // motion currently going on, no action
+  if (motionStartTime > motionStopTime) return;
+
+  const openDuration = parseInt(m(now - doorOpenTime ).format('mm'))
+  const timeSinceMotion = parseInt(m(now - motionStopTime).format("mm"))
+
+  if(timeSinceMotion === 20){
+    const str = `Garage has been open for ${openDuration} with no motion for ${timeSinceMotion}`
+    client.sendMsg(str);
+  }
+
+};
 
 // app.get('/api/', (req, res) => {
 //   console.log('/api');
@@ -66,7 +84,7 @@ app.post("/sms", (req, res) => {
               {
                 to: user.phone,
                 from: config.twilio.number,
-                body: `Reservation:\n\n${message}`
+                body: `Reservation:\n\n${message}`,
               },
               (err, message) => {
                 if (err) {
@@ -99,13 +117,9 @@ app.post("/door/:status", (req, res) => {
   const status = req.params.status;
   let newValue;
   if (status === "open") {
-    console.log("Open1:");
     newValue = objIO.OPEN;
-    console.log("Open2:");
   } else if (status === "close") {
-    console.log("Closed 1:");
     newValue = objIO.CLOSED;
-    console.log("Closed 2:");
   } else {
     console.error(`Invalid door command. open / close is valid. Found: ${status}`);
     res.status(400).send();
@@ -121,7 +135,7 @@ app.post("/move", (req, res) => {
   clearTimeout(moveTimeout);
   objIO.motion.writeSync(objIO.MOVEMENT);
   moveTimeout = setTimeout(() => objIO.motion.writeSync(objIO.NO_MOVEMENT), 5000);
-  res.status(200).send();
+  res.json("done");
 });
 
 app.get("/led/:color", (req, res) => {
@@ -202,7 +216,7 @@ app.post("/led/blink/:color/:time", (req, res) => {
 
 //only need this to host the static files if we're running on the pi
 if (CURRENT_ENV === "production") {
-  app.get("/", function(req, res) {
+  app.get("/", function (req, res) {
     if (req.session) {
       console.log(req.session);
     }
@@ -215,7 +229,7 @@ app.get("/api/unauthorized", (req, res) => {
 });
 
 // catch all 404 function
-app.use(function(req, res) {
+app.use(function (req, res) {
   res.status(404).json("Something broke! Check url and try again?");
 });
 
