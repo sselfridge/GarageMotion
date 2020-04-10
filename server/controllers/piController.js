@@ -73,7 +73,7 @@ function heartbeat() {
   const motionState = piController.objIO.motion.readSync();
   const doorState = piController.objIO.door.readSync();
 
-  if (motionState) {
+  if (doorState) {
     turnOnLED("green");
   } else {
     turnOffLED("green");
