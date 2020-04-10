@@ -91,7 +91,7 @@ function ioStatus() {
   let green = piController.objIO.green.readSync();
 
   // motion = motion === OPEN ? "open" : "closed";
-  door = door === OPEN ? "open" : "closed";
+  // door = door === OPEN ? "open" : "closed";
   green = green === ON ? "ON" : "  ";
 
   return `motion: ${motion} door: ${door}------- -- green:${green}`;
