@@ -1,5 +1,5 @@
 const moment = require("moment");
-const event = require("./eventController");
+const Event = require("../models/event");
 
 class CheckController {
   constructor(objIO) {
@@ -39,14 +39,14 @@ class CheckController {
 
         const start = this.doorCloseTime;
         const end = this.doorOpenTime;
-        event.createEvent("door", "open", start, end);
+        createEvent("door", "open", start, end);
       } else if (doorStatus === this.CLOSED) {
         console.log("DOOR CLOSED!!!!");
         this.doorCloseTime = moment();
 
         const start = this.doorOpenTime;
         const end = this.doorCloseTime;
-        event.createEvent("door", "close", start, end);
+        createEvent("door", "close", start, end);
       } else {
         console.error("Invalid door state");
       }
@@ -55,23 +55,23 @@ class CheckController {
     }
   }
 
-  checkMotion(motionStatus) {
+  checkMotion(motionStatus, doorStatus) {
     const prevMotionStatus = this.motionStatus;
     if (motionStatus !== prevMotionStatus) {
-      if (motionStatus === this.OPEN) {
+      if (motionStatus === this.MOVEMENT) {
         console.log("motion Started!!!!!");
         this.motionStartTime = moment();
 
         const start = this.motionStopTime;
         const end = this.motionStartTime;
-        event.createEvent("motion", "start", start, end);
-      } else if (motionStatus === this.CLOSED) {
+        createEvent("motion", "start", start, end);
+      } else if (motionStatus === this.NO_MOVEMENT) {
         console.log("motion STOPPED!!!!");
         this.motionStopTime = moment();
 
         const start = this.motionStartTime;
         const end = this.motionStopTime;
-        event.createEvent("motion", "stop", start, end);
+        createEvent("motion", "stop", start, end);
       } else {
         console.error("Invalid motion state");
       }
@@ -82,5 +82,12 @@ class CheckController {
 
   checkForActionReq() {}
 }
+
+createEvent = function (type, action, start, end) {
+  const duration = end - start;
+  const newEvent = new Event({ start, end, duration, type, action });
+  newEvent.save();
+  console.log(`Event Created`);
+};
 
 module.exports = CheckController;

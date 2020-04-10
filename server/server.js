@@ -7,7 +7,7 @@ const config = require("../config/keys");
 // const twilio = require('twilio')(config.twilio.accountSid, config.twilio.authToken);
 
 const pi = require("./controllers/piController");
-const CheckController = require("./controllers/CheckController");
+const CheckController = require("./controllers/event");
 
 mongooseStart();
 
@@ -38,7 +38,13 @@ const interval = setInterval(() => {
 
   CC.checkDoor(doorStatus);
   CC.checkMotion(motionStatus);
-}, 100);
+
+  
+
+
+
+
+}, 2000);
 
 // app.get('/api/', (req, res) => {
 //   console.log('/api');
@@ -66,7 +72,7 @@ app.post("/sms", (req, res) => {
               {
                 to: user.phone,
                 from: config.twilio.number,
-                body: `Reservation:\n\n${message}`
+                body: `Reservation:\n\n${message}`,
               },
               (err, message) => {
                 if (err) {
@@ -202,7 +208,7 @@ app.post("/led/blink/:color/:time", (req, res) => {
 
 //only need this to host the static files if we're running on the pi
 if (CURRENT_ENV === "production") {
-  app.get("/", function(req, res) {
+  app.get("/", function (req, res) {
     if (req.session) {
       console.log(req.session);
     }
@@ -215,7 +221,7 @@ app.get("/api/unauthorized", (req, res) => {
 });
 
 // catch all 404 function
-app.use(function(req, res) {
+app.use(function (req, res) {
   res.status(404).json("Something broke! Check url and try again?");
 });
 
