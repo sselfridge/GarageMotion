@@ -22,13 +22,14 @@ const CURRENT_ENV = process.env.NODE_ENV === "production" ? "production" : "dev"
 const objIO = pi.setupIO();
 const CC = new CheckController(objIO);
 
-// if (CURRENT_ENV === "dev") {
-const logInterval = setInterval(() => {
-  console.log(pi.ioStatus());
-}, 1000);
-// }
+if (CURRENT_ENV === "dev") {
+  const logInterval = setInterval(() => {
+    console.log(pi.ioStatus());
+  }, 1000);
+}
 
 //check interval for changing door / LED values
+intervalCount = 0;
 const interval = setInterval(() => {
   const now = new Date();
 
@@ -40,16 +41,25 @@ const interval = setInterval(() => {
   CC.checkMotion(motionStatus);
 
   if (doorStatus === CC.OPEN) eventCheck(CC);
+
+  //blink light every so often.
+  if (intervalCount % 5 === 0) pi.blinkLED("green", 2000);
+  intervalCount++;
 }, 2000);
 
 const eventCheck = (CC) => {
   const { doorOpenTime, motionStopTime, motionStartTime } = CC;
   const now = m();
-  // motion currently going on, no action
-  if (motionStartTime > motionStopTime) return;
 
   const openDuration = parseInt(m(now - doorOpenTime).format("mm"));
   const timeSinceMotion = parseInt(m(now - motionStopTime).format("mm"));
+
+  if (intervalCount % 5 === 0) {
+    console.log(`Open Duration: ${openDuration} min - Time Since Motion: ${timeSinceMotion} min`);
+  }
+  // motion currently going on, no action
+
+  if (motionStartTime > motionStopTime) return;
 
   if (timeSinceMotion === 20) {
     const str = `Garage has been open for ${openDuration} with no motion for ${timeSinceMotion}`;
@@ -213,15 +223,42 @@ app.post("/led/blink/:color/:time", (req, res) => {
   res.json("done");
 });
 
+const makeHtml = () => {
+  const { doorOpenTime, motionStopTime, doorStatus } = CC;
+  const now = m();
+  const timeSinceMotion = m(motionStopTime).fromNow();
+  const doorStatusText = doorStatus === CC.OPEN ? "OPEN" : "CLOSED";
+  const mostRecentDoorEvent = Math.max(CC.doorCloseTime,CC.doorOpenTime)
+  const duration = m(mostRecentDoorEvent).fromNow();
+  let str = `Current Time:<br/><b>${now}</b><br/><br/><br/>`;
+  str += `Door Status: <b>${doorStatusText}</b> <br/><br/>`;
+    str += `has been since: ${duration} <br/> Last motion: ${timeSinceMotion} <br/><br/><br/>`;
+    str += `Door: <br/>${m(mostRecentDoorEvent)} <br/>`;
+  
+  str += `Motion: <br/>${motionStopTime} <br/>`;
+
+  return str;
+};
+
 //only need this to host the static files if we're running on the pi
-if (CURRENT_ENV === "production") {
-  app.get("/", function (req, res) {
-    if (req.session) {
-      console.log(req.session);
-    }
-    res.sendFile(path.join(__dirname + "/../build/index.html"));
-  });
-}
+// for react, no need since currently just sending html
+// if (CURRENT_ENV === "production") {
+app.get("/", function (req, res) {
+  // if (req.session) {
+  //   console.log(req.session);
+  // }
+  // res.sendFile(path.join(__dirname + "/../build/index.html"));
+  const { doorOpenTime, motionStopTime } = CC;
+  const now = m();
+
+  const openDuration = parseInt(m(now - doorOpenTime).format("mm"));
+  const timeSinceMotion = parseInt(m(now - motionStopTime).format("mm"));
+
+  let str = makeHtml();
+
+  res.send(str);
+});
+// }
 
 app.get("/api/unauthorized", (req, res) => {
   res.send("You aren't authorized to access this");

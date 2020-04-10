@@ -1,7 +1,7 @@
 const MockGpio = require("../MockGpio");
 
-const OPEN = 1;
-const CLOSED = 0;
+const OPEN = 0;
+const CLOSED = 1;
 const ON = 1;
 const OFF = 0;
 const MOVEMENT = 1;
@@ -30,8 +30,8 @@ const piController = {
 
     //time constants in seconds
     DOOR_BUFFER: 30, // door must be in new state for this long before changing
-    MOTION_TIMEOUT: 1200 // N in minutes x 60 x 1000
-  }
+    MOTION_TIMEOUT: 1200, // N in minutes x 60 x 1000
+  },
 };
 
 // exported functions
@@ -58,9 +58,9 @@ if (CURRENT_ENV === 'production') {
     piController.objIO.green =  new Gpio(17, 'out');
 
   } else {
-    piController.objIO.motion = new MockGpio();
-    piController.objIO.door = new MockGpio();
-    piController.objIO.green = new MockGpio();
+    piController.objIO.motion = new MockGpio(0);
+    piController.objIO.door = new MockGpio(0);
+    piController.objIO.green = new MockGpio(0);
 
   }
   piController.objIO.doorTime = 0; //initialize to 0
@@ -73,14 +73,15 @@ function heartbeat() {
   const motionState = piController.objIO.motion.readSync();
   const doorState = piController.objIO.door.readSync();
 
-  if (doorState) {
-    turnOnLED("green");
-  } else {
-    turnOffLED("green");
-  }
+  // if (doorState) {
+  //   turnOnLED("green");
+  // } else {
+  //   turnOffLED("green");
+  // }
+
   const status = {
     door: doorState,
-    motion: motionState
+    motion: motionState,
   };
   return status;
 }
@@ -90,8 +91,8 @@ function ioStatus() {
   let door = piController.objIO.door.readSync();
   let green = piController.objIO.green.readSync();
 
-  // motion = motion === OPEN ? "open" : "closed";
-  // door = door === OPEN ? "open" : "closed";
+  motion = motion === MOVEMENT ? "Movement" : "NO Movement";
+  door = door === OPEN ? "open" : "closed";
   green = green === ON ? "ON" : "  ";
 
   return `motion: ${motion} door: ${door}------- -- green:${green}`;
@@ -144,7 +145,7 @@ function turnOffLED(color, timeout = 0) {
 }
 
 function blinkLED(color, time = 5000) {
-  console.log(`Blink ${color} LED for ${time}`);
+  if (CURRENT_ENV === "dev") console.log(`Blink ${color} LED for ${time}`);
   let led;
   switch (color) {
     case "red":

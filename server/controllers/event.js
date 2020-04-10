@@ -32,7 +32,7 @@ class CheckController {
   checkDoor(doorStatus) {
     const prevDoorStatus = this.doorStatus;
 
-    if (doorStatus !== prevDoorStatus && this.doorBuffer()) {
+    if (doorStatus !== prevDoorStatus) {
       if (doorStatus === this.OPEN) {
         console.log("DOOR OPENED");
         this.doorOpenTime = moment();
