@@ -22,11 +22,11 @@ const CURRENT_ENV = process.env.NODE_ENV === "production" ? "production" : "dev"
 const objIO = pi.setupIO();
 const CC = new CheckController(objIO);
 
-if (CURRENT_ENV === "dev") {
-  const logInterval = setInterval(() => {
-    console.log(pi.ioStatus());
-  }, 600);
-}
+// if (CURRENT_ENV === "dev") {
+const logInterval = setInterval(() => {
+  console.log(pi.ioStatus());
+}, 1000);
+// }
 
 //check interval for changing door / LED values
 const interval = setInterval(() => {
@@ -48,14 +48,13 @@ const eventCheck = (CC) => {
   // motion currently going on, no action
   if (motionStartTime > motionStopTime) return;
 
-  const openDuration = parseInt(m(now - doorOpenTime ).format('mm'))
-  const timeSinceMotion = parseInt(m(now - motionStopTime).format("mm"))
+  const openDuration = parseInt(m(now - doorOpenTime).format("mm"));
+  const timeSinceMotion = parseInt(m(now - motionStopTime).format("mm"));
 
-  if(timeSinceMotion === 20){
-    const str = `Garage has been open for ${openDuration} with no motion for ${timeSinceMotion}`
+  if (timeSinceMotion === 20) {
+    const str = `Garage has been open for ${openDuration} with no motion for ${timeSinceMotion}`;
     client.sendMsg(str);
   }
-
 };
 
 // app.get('/api/', (req, res) => {
