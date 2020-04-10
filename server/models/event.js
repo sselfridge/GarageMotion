@@ -6,7 +6,7 @@ const eventSchema = new Schema({
   end: { type: Number, required: true },
   duration: { type: Number, required: true },
   type: { type: String, required: true },
-  action: { type: String, required: true }
+  note: { type: String, required: true }
 });
 
 module.exports = mongoose.model("Event", eventSchema);
