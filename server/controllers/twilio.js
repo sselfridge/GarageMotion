@@ -52,7 +52,8 @@ const throttleMsg = (id, msg) => {
 
       return false;
     } else {
-      console.log(`Message ${id} Ready to Send again`);
+      console.log(`Message ${id} Ready to Send again. Last sent: ${prevMsgTime.format('hh:mm A')}`);
+      msgTimes[id] = m();
       return true;
     }
   }
