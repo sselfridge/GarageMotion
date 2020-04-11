@@ -239,7 +239,8 @@ const makeHtml = () => {
   str += `Motion: <br/>${motionStopTime.format(formatStr)} <br/>`;
   str += `<div style="position: absolute; bottom: 0;" >`;
   str += `<span>${intervalCount} iterations</span><br>`;
-  str += `<span>Online Since: ${piStartTime.format(formatStr)}</span>`;
+  str += `<span>Online Since: ${piStartTime.format(formatStr)}</span><br>`;
+  str += `<span>${piStartTime.fromNow()}</span>`;
   str += `</div>`;
 
   return str;
