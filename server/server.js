@@ -58,12 +58,11 @@ const eventCheck = (CC) => {
     console.log(`Open Duration: ${openDuration} min - Time Since Motion: ${timeSinceMotion} min`);
   }
   // motion currently going on, no action
-
-  if (motionStartTime > motionStopTime) return;
+  // if (motionStartTime > motionStopTime) return;
 
   if (timeSinceMotion === 20) {
     const str = `Garage has been open for ${openDuration} with no motion for ${timeSinceMotion}`;
-    client.sendMsg(str);
+    client.sendMsg(101, str);
   }
 };
 

@@ -7,8 +7,8 @@ let msgTimes = {};
 
 const makeClient = (numbers) => {
   const client = {
-    sendMsg: (sendMsg = (msg) => {
-      if (throttleMsg(msg)) {
+    sendMsg: (sendMsg = (id, msg) => {
+      if (throttleMsg(id,msg)) {
         numbers.forEach((number) => {
           if (CURRENT_ENV === "production") {
             twilio.messages
@@ -29,22 +29,27 @@ const makeClient = (numbers) => {
   return client;
 };
 
-const throttleMsg = (msg) => {
-  const prevMsgTime = msgTimes[msg] ? msgTimes[msg] : 0;
-  const minSinceLastMsg = parseInt(m(m() - prevMsgTime).format("mm"));
+const throttleMsg = (id,msg) => {
+  if (msgTimes[id] === undefined) {
+    msgTimes[id] = m();
+    return true;
+  } else {
+    const prevMsgTime = msgTimes[id];
+    const now = m();
+    const minSinceLastMsg =(m(now - prevMsgTime).minutes());
 
-    console.log(msgTimes);
+    console.log('minSinceLastMsg');
+    console.log(minSinceLastMsg);
 
-  if (minSinceLastMsg < 5) {
-    console.log(`This message was sent ${minSinceLastMsg}min ago.`);
-    console.log("msg not sent", msg);
+    if (minSinceLastMsg < 5) {
+      console.log(`This message was sent ${minSinceLastMsg}min ago.`);
+      console.log("msg not sent", msg);
 
-    return false;
+      return false;
+    } else {
+      return true;
+    }
   }
-
-
-  msgTimes[msg] = m();
-  return true;
 };
 
 exports.makeClient = makeClient;
