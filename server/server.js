@@ -51,10 +51,10 @@ const eventCheck = (CC) => {
   const { doorOpenTime, motionStopTime, motionStartTime } = CC;
   const now = m();
 
-  const openDuration = parseInt(m(now - doorOpenTime).format("mm"));
-  const timeSinceMotion = parseInt(m(now - motionStopTime).format("mm"));
+  const openDuration = parseInt(m(now - doorOpenTime).minutes());
+  const timeSinceMotion = parseInt(m(now - motionStopTime).minutes());
 
-  if (intervalCount % 5 === 0) {
+  if (intervalCount % 25 === 0) {
     console.log(`Open Duration: ${openDuration} min - Time Since Motion: ${timeSinceMotion} min`);
   }
   // motion currently going on, no action
