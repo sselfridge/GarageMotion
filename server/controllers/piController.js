@@ -145,7 +145,7 @@ function turnOffLED(color, timeout = 0) {
 }
 
 function blinkLED(color, time = 5000) {
-  if (CURRENT_ENV === "dev") console.log(`Blink ${color} LED for ${time}`);
+  // if (CURRENT_ENV === "dev") console.log(`Blink ${color} LED for ${time}`);
   let led;
   switch (color) {
     case "red":
