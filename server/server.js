@@ -61,7 +61,9 @@ const eventCheck = (CC) => {
   // if (motionStartTime > motionStopTime) return;
 
   if (timeSinceMotion === 20) {
-    const str = `Garage has been open for ${openDuration} with no motion for ${timeSinceMotion}`;
+    let str = `Garage Alert\n`;
+    str += `Door has been open for ${openDuration}min\n`;
+    str += `with no motion for ${timeSinceMotion}min`;
     client.sendMsg(101, str);
   }
 };

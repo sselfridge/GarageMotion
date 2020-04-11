@@ -9,25 +9,30 @@ const makeClient = (numbers) => {
   const client = {
     sendMsg: (sendMsg = (id, msg) => {
       if (throttleMsg(id, msg)) {
-        numbers.forEach((number) => {
-          if (CURRENT_ENV === "production") {
-            twilio.messages
-              .create({
-                body: msg,
-                from: config.twilio.from,
-                to: number,
-              })
-              .then((message) => console.log(message.sid));
-          } else {
-            console.log('TEXT MESSAGE TEXT MESSAGE TEXT MESSAGE TEXT MESSAGE "sent" to', number);
-            console.log(msg);
-          }
-        });
+        numbers.forEach(number => sendMsgToNumber(number,msg))
       }
     }),
   };
   return client;
 };
+
+const sendMsgToNumber = (number,msg) => {
+  if (CURRENT_ENV === "production") {
+    twilio.messages
+      .create({
+        body: msg,
+        from: config.twilio.from,
+        to: number,
+      })
+      .then((message) => console.log(message.sid));
+  } else {
+    console.log("***************************MESSAGE SENT*******************************");
+    console.log('To:', number);
+    console.log(msg);
+  }
+}
+
+
 
 const throttleMsg = (id, msg) => {
   if (msgTimes[id] === undefined) {
@@ -40,8 +45,6 @@ const throttleMsg = (id, msg) => {
     const now = m();
     const minSinceLastMsg = m(now - prevMsgTime).minutes();
 
-    console.log("minSinceLastMsg");
-    console.log(minSinceLastMsg);
 
     if (minSinceLastMsg < 5) {
       console.log(`This message was sent ${minSinceLastMsg}min ago.`);
