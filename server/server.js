@@ -60,7 +60,7 @@ const eventCheck = (CC) => {
   // motion currently going on, no action
   // if (motionStartTime > motionStopTime) return;
 
-  if (timeSinceMotion === 20) {
+  if (timeSinceMotion === 10) {
     const str = `Garage has been open for ${openDuration} with no motion for ${timeSinceMotion}`;
     client.sendMsg(101, str);
   }
