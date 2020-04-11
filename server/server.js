@@ -18,7 +18,7 @@ app.use(express.static(path.join(__dirname, "../build")));
 app.use(express.static(path.join(__dirname, "..", "public")));
 
 const CURRENT_ENV = process.env.NODE_ENV === "production" ? "production" : "dev";
-
+const piStartTime = m();
 const objIO = pi.setupIO();
 const CC = new CheckController(objIO);
 
@@ -224,18 +224,23 @@ app.post("/led/blink/:color/:time", (req, res) => {
 });
 
 const makeHtml = () => {
+  const formatStr = "dddd, MMMM Do YYYY, h:mm:ss a";
   const { doorOpenTime, motionStopTime, doorStatus } = CC;
   const now = m();
   const timeSinceMotion = m(motionStopTime).fromNow();
   const doorStatusText = doorStatus === CC.OPEN ? "OPEN" : "CLOSED";
-  const mostRecentDoorEvent = Math.max(CC.doorCloseTime,CC.doorOpenTime)
+  const mostRecentDoorEvent = Math.max(CC.doorCloseTime, CC.doorOpenTime);
   const duration = m(mostRecentDoorEvent).fromNow();
-  let str = `Current Time:<br/><b>${now}</b><br/><br/><br/>`;
+  let str = `Current Time:<br/><b>${now.format(formatStr)}</b><br/><br/><br/>`;
   str += `Door Status: <b>${doorStatusText}</b> <br/><br/>`;
-    str += `has been since: ${duration} <br/> Last motion: ${timeSinceMotion} <br/><br/><br/>`;
-    str += `Door: <br/>${m(mostRecentDoorEvent)} <br/>`;
-  
-  str += `Motion: <br/>${motionStopTime} <br/>`;
+  str += `since: ${duration} <br/> Last motion: ${timeSinceMotion} <br/><br/><br/>`;
+  str += `Door: <br/>${m(mostRecentDoorEvent).format(formatStr)} <br/>`;
+
+  str += `Motion: <br/>${motionStopTime.format(formatStr)} <br/>`;
+  str += `<div style="position: absolute; bottom: 0;" >`;
+  str += `<span>${intervalCount} iterations</span><br>`;
+  str += `<span>Online Since: ${piStartTime.format(formatStr)}</span>`;
+  str += `</div>`;
 
   return str;
 };
