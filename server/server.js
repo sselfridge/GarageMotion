@@ -60,12 +60,21 @@ const eventCheck = (CC) => {
   // motion currently going on, no action
   // if (motionStartTime > motionStopTime) return;
 
-  if (timeSinceMotion === 20) {
+  if (timeSinceMotion === 45) {
     let str = `Garage Alert:${now.format('hh:mm A')}\n`;
     str += `Door has been open for ${openDuration}min\n`;
     str += `with no motion for ${timeSinceMotion}min`;
     client.sendMsg(101, str);
   }
+
+  if(now.format('hh:mm') === '23:00'){
+    let str = `Garage Alert:${now.format('hh:mm A')}\n`;
+    str += `Its ${now.format('hh:mm A')} and the garage door is still open`
+    str += `Door has been open for ${openDuration}min\n`;
+    str += `with no motion for ${timeSinceMotion}min`;
+    client.sendMsg(11, str);
+  }
+
 };
 
 // app.get('/api/', (req, res) => {
