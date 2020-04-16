@@ -51,30 +51,32 @@ const eventCheck = (CC) => {
   const { doorOpenTime, motionStopTime, motionStartTime } = CC;
   const now = m();
 
+  const idleAlertTimeMin = 45;
+
   const openDuration = parseInt(m(now - doorOpenTime).minutes());
   const timeSinceMotion = parseInt(m(now - motionStopTime).minutes());
 
   if (intervalCount % 25 === 0) {
     console.log(`Open Duration: ${openDuration} min - Time Since Motion: ${timeSinceMotion} min`);
   }
-  // motion currently going on, no action
-  // if (motionStartTime > motionStopTime) return;
 
-  if (timeSinceMotion === 45) {
-    let str = `Garage Alert:${now.format('hh:mm A')}\n`;
+  if (
+    (timeSinceMotion === idleAlertTimeMin && openDuration > idleAlertTimeMin) ||
+    (openDuration === idleAlertTimeMin && timeSinceMotion > idleAlertTimeMin)
+  ) {
+    let str = `Garage Alert:${now.format("hh:mm A")}\n`;
     str += `Door has been open for ${openDuration}min\n`;
     str += `with no motion for ${timeSinceMotion}min`;
     client.sendMsg(101, str);
   }
 
-  if(now.format('hh:mm') === '23:00'){
-    let str = `Garage Alert:${now.format('hh:mm A')}\n`;
-    str += `Its ${now.format('hh:mm A')} and the garage door is still open`
+  if (now.format("hh:mm") === "23:00") {
+    let str = `Garage Alert:${now.format("hh:mm A")}\n`;
+    str += `Its ${now.format("hh:mm A")} and the garage door is still open`;
     str += `Door has been open for ${openDuration}min\n`;
     str += `with no motion for ${timeSinceMotion}min`;
     client.sendMsg(11, str);
   }
-
 };
 
 // app.get('/api/', (req, res) => {
