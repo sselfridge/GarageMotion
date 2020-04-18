@@ -1,5 +1,6 @@
 const express = require("express");
 const path = require("path");
+const fs = require("fs");
 const m = require("moment");
 const config = require("../config/keys");
 const mongooseStart = require("./bin/mongoose");
@@ -14,8 +15,8 @@ const client = twilio.makeClient(numbers);
 
 const app = express();
 
-app.use(express.static(path.join(__dirname, "../build")));
-app.use(express.static(path.join(__dirname, "..", "public")));
+// app.use(express.static(path.join(__dirname, "../build")));
+// app.use(express.static(path.join(__dirname, "..", "public")));
 
 const CURRENT_ENV = process.env.NODE_ENV === "production" ? "production" : "dev";
 const piStartTime = m();
@@ -60,10 +61,10 @@ const eventCheck = (CC) => {
     console.log(`Open Duration: ${openDuration} min - Time Since Motion: ${timeSinceMotion} min`);
   }
 
-  if (
-    (timeSinceMotion === idleAlertTimeMin && openDuration > idleAlertTimeMin) ||
-    (openDuration === idleAlertTimeMin && timeSinceMotion > idleAlertTimeMin)
-  ) {
+  // motion currently going on, no action
+  // if (motionStartTime > motionStopTime) return;
+
+  if (timeSinceMotion === 45) {
     let str = `Garage Alert:${now.format("hh:mm A")}\n`;
     str += `Door has been open for ${openDuration}min\n`;
     str += `with no motion for ${timeSinceMotion}min`;
@@ -235,48 +236,23 @@ app.post("/led/blink/:color/:time", (req, res) => {
   res.json("done");
 });
 
-const makeHtml = () => {
-  const formatStr = "dddd, MMMM Do YYYY, h:mm:ss a";
-  const { doorOpenTime, motionStopTime, doorStatus } = CC;
-  const now = m();
-  const timeSinceMotion = m(motionStopTime).fromNow();
-  const doorStatusText = doorStatus === CC.OPEN ? "OPEN" : "CLOSED";
-  const mostRecentDoorEvent = Math.max(CC.doorCloseTime, CC.doorOpenTime);
-  const duration = m(mostRecentDoorEvent).fromNow();
-  let str = `Current Time:<br/><b>${now.format(formatStr)}</b><br/><br/><br/>`;
-  str += `Door Status: <b>${doorStatusText}</b> <br/><br/>`;
-  str += `since: ${duration} <br/> Last motion: ${timeSinceMotion} <br/><br/><br/>`;
-  str += `Door: <br/>${m(mostRecentDoorEvent).format(formatStr)} <br/>`;
-
-  str += `Motion: <br/>${motionStopTime.format(formatStr)} <br/>`;
-  str += `<div style="position: absolute; bottom: 0;" >`;
-  str += `<span>${intervalCount} iterations</span><br>`;
-  str += `<span>Online Since: ${piStartTime.format(formatStr)}</span><br>`;
-  str += `<span>${piStartTime.fromNow()}</span>`;
-  str += `</div>`;
-
-  return str;
-};
-
 //only need this to host the static files if we're running on the pi
 // for react, no need since currently just sending html
-// if (CURRENT_ENV === "production") {
 app.get("/", function (req, res) {
   // if (req.session) {
   //   console.log(req.session);
   // }
-  // res.sendFile(path.join(__dirname + "/../build/index.html"));
-  const { doorOpenTime, motionStopTime } = CC;
-  const now = m();
+  try {
+    const template = fs.readFileSync("build/index.html", "utf-8");
 
-  const openDuration = parseInt(m(now - doorOpenTime).format("mm"));
-  const timeSinceMotion = parseInt(m(now - motionStopTime).format("mm"));
+    let html = makeHtml(template);
 
-  let str = makeHtml();
-
-  res.send(str);
+    // res.sendFile(html);
+    res.send(html);
+  } catch (error) {
+    console.log(error);
+  }
 });
-// }
 
 app.get("/api/unauthorized", (req, res) => {
   res.send("You aren't authorized to access this");
@@ -291,8 +267,25 @@ app.use(function (req, res) {
 app.use(({ errCode, error }, req, res, next) => {
   console.log("Error Code:");
   console.log(errCode);
+  console.log(error);
   res.status(errCode).json({ error });
 });
+
+const makeHtml = (template) => {
+  const data = CC.getData();
+  data.intervalCount = intervalCount;
+  data.startTime = piStartTime.format("MMMM Do YYYY, h:mm:ss a")
+  data.startTimeFromNow = m(piStartTime).fromNow();
+
+  for (const key in data) {
+    if (data.hasOwnProperty(key)) {
+      const element = data[key];
+      const regex = new RegExp("{" + key + "}");
+      template = template.replace(regex, element);
+    }
+  }
+  return template
+};
 
 const port = CURRENT_ENV === "production" ? 5000 : 3001;
 

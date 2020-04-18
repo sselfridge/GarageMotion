@@ -1,0 +1,53 @@
+<html>
+  <head> </head>
+  <style>
+    @media only screen and (max-width: 600px) {
+      body {
+        font-size: 5vw;
+      }
+    }
+    @media only screen and (min-width: 600px) {
+      body {
+        font-size: 2vw;
+      }
+    }
+    main {
+      margin: 15px 50px;
+    }
+    p {
+      font-size: 3vw;
+      margin: 0;
+    }
+    .status {
+      font-weight: 800;
+    }
+    section {
+      margin: 50px;
+    }
+    footer {
+      max-height: 150px;
+      position: absolute;
+      bottom: 0;
+    }
+  </style>
+  <body>
+    <header>{currentTime}</header>
+    <main>
+      Door status:
+      <div class="status">{doorStatus}</div>
+    </main>
+    <section>
+      <p><span>Door Since: </span><span class="status">{doorDuration}</span></p>
+      <p><span>Last Motion:</span><span class="status">{motionDuration}</span></p>
+    </section>
+    <section>
+      <p>Motion: <span class="status">{motionTime}</span></p>
+      <p>Door: <span class="status">{doorTime}</span></p>
+    </section>
+    <footer>
+      <div>{intervalCount} iterations</div>
+      <div>{startTime}</div>
+      <div>{startTimeFromNow}</div>
+    </footer>
+  </body>
+</html>

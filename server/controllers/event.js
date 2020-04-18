@@ -1,15 +1,15 @@
-const moment = require("moment");
+const m = require("moment");
 const Event = require("../models/event");
 
 class CheckController {
   constructor(objIO) {
     console.log("Initalize State");
 
-    this.doorOpenTime = moment();
-    this.doorCloseTime = moment(moment() - 5000);
+    this.doorOpenTime = m();
+    this.doorCloseTime = m(m() - 5000);
     this.doorStatus = objIO.OPEN;
-    this.motionStartTime = moment();
-    this.motionStopTime = moment(moment() - 5000);
+    this.motionStartTime = m();
+    this.motionStopTime = m(m() - 5000);
     this.motionStatus = objIO.MOVEMENT;
 
     this.OPEN = objIO.OPEN;
@@ -25,7 +25,7 @@ class CheckController {
   //set in piController.js
   doorBuffer() {
     const lastEvent = Math.max(this.doorCloseTime, this.doorOpenTime);
-    const secSince = moment(moment() - lastEvent).seconds();
+    const secSince = m(m() - lastEvent).seconds();
     return secSince > this.DOOR_BUFFER ? true : false;
   }
 
@@ -35,10 +35,10 @@ class CheckController {
     if (doorStatus !== prevDoorStatus) {
       if (doorStatus === this.OPEN) {
         console.log("DOOR OPENED");
-        this.doorOpenTime = moment();
+        this.doorOpenTime = m();
       } else if (doorStatus === this.CLOSED) {
         console.log("DOOR CLOSED");
-        this.doorCloseTime = moment();
+        this.doorCloseTime = m();
 
         const start = this.doorOpenTime;
         const end = this.doorCloseTime;
@@ -56,10 +56,10 @@ class CheckController {
     if (motionStatus !== prevMotionStatus) {
       if (motionStatus === this.MOVEMENT) {
         console.log("motion Started");
-        this.motionStartTime = moment();
+        this.motionStartTime = m();
       } else if (motionStatus === this.NO_MOVEMENT) {
         console.log("motion Stopped");
-        this.motionStopTime = moment();
+        this.motionStopTime = m();
 
         const start = this.motionStartTime;
         const end = this.motionStopTime;
@@ -72,7 +72,25 @@ class CheckController {
     }
   }
 
-  checkForActionReq() {}
+  getData() {
+    const formatStr = "dddd, MMMM Do YYYY - h:mm:ss a";
+    const formatStr2 = "h:mm:ss a";
+    const { doorOpenTime, doorCloseTime, motionStopTime, doorStatus, OPEN } = this;
+    const motionDuration = m(motionStopTime).fromNow();
+    const doorStatusText = doorStatus === OPEN ? "OPEN" : "CLOSED";
+    const mostRecentDoorEvent = Math.max(doorCloseTime, doorOpenTime);
+    const doorDuration = m(mostRecentDoorEvent).fromNow();
+
+    return {
+      currentTime: m().format(formatStr),
+      doorStatus: doorStatusText,
+      doorDuration,
+      motionDuration,
+      motionTime: m(motionStopTime).format(formatStr2),
+      doorTime: m(mostRecentDoorEvent).format(formatStr2),
+      intervalCount
+    };
+  }
 }
 
 createEvent = function (type, note, start, end) {
